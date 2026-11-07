@@ -6,12 +6,14 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>app.ico</ApplicationIcon>
     <AssemblyName>WinRawBT</AssemblyName>
     <RootNamespace>WinRawBT</RootNamespace>
     <Version>1.0.0</Version>
     <Authors>WinRawBT Team</Authors>
     <Description>Windows Bluetooth ESC/POS Print Bridge Service</Description>
+    
+    <!-- Enable cross-platform Windows targeting -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     
     <!-- Single-File Self-Contained Build Settings (TASK-17) -->
     <PublishSingleFile>true</PublishSingleFile>

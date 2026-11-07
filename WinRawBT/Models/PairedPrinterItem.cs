@@ -8,7 +8,7 @@ namespace WinRawBT.Models;
 public class PairedPrinterItem
 {
     public string Name { get; set; } = string.Empty;
-    public BluetoothAddress BluetoothAddress { get; set; }
+    public BluetoothAddress BluetoothAddress { get; set; } = BluetoothAddress.None;
     
     /// <summary>
     /// Formatted MAC address in XX:XX:XX:XX:XX:XX format

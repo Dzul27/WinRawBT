@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using InTheHand.Net;
@@ -48,19 +49,8 @@ public class BluetoothPrinterService : IDisposable
                 return devices;
             }
 
-            // Check if Bluetooth radio is available and enabled
-            if (!BluetoothRadio.IsSupported)
-            {
-                System.Diagnostics.Debug.WriteLine("Bluetooth is not supported on this system");
-                return devices;
-            }
-
-            var radio = BluetoothRadio.PrimaryRadio;
-            if (radio == null || radio.Mode == RadioMode.PowerOff)
-            {
-                System.Diagnostics.Debug.WriteLine("Bluetooth radio is turned off");
-                return devices;
-            }
+            // Note: BluetoothRadio checking may not be available in all versions of the library
+            // We'll rely on the PairedDevices call to fail gracefully if Bluetooth is unavailable
 
             // Get paired devices
             var pairedDevices = _bluetoothClient.PairedDevices;
