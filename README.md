@@ -82,6 +82,7 @@ The examples use the default port 8080; replace `8080` with your port if you cha
 | `AutoStartService` | `false` | Start the service on launch when a printer is saved |
 | `MinimizeToTray` | `true` | Closing the window hides to tray |
 | `PrependInit` | `false` | Prepend `ESC @` to jobs that do not start with it |
+| `PaperWidthMm` | `58` | Paper width of the Test Connection receipt: `58` (32 columns) or `80` (48 columns). Change it with the **Paper** selector in the main window. It does not affect jobs from your POS, which are sent as-is, so the POS controls the layout for its paper width |
 
 ## FAQ
 

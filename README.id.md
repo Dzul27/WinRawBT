@@ -82,6 +82,7 @@ Contoh memakai port bawaan 8080; ganti `8080` dengan port Anda jika sudah mengub
 | `AutoStartService` | `false` | Jalankan service saat aplikasi dibuka jika printer sudah tersimpan |
 | `MinimizeToTray` | `true` | Menutup jendela akan menyembunyikannya ke tray |
 | `PrependInit` | `false` | Tambahkan `ESC @` di depan pekerjaan yang belum diawali itu |
+| `PaperWidthMm` | `58` | Lebar kertas untuk struk Test Connection: `58` (32 kolom) atau `80` (48 kolom). Ubah lewat pilihan **Paper** di jendela utama. Tidak memengaruhi pekerjaan cetak dari POS Anda yang dikirim apa adanya, jadi tata letak untuk lebar kertasnya diatur oleh POS |
 
 ## FAQ
 

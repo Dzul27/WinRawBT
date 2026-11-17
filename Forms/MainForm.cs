@@ -105,6 +105,8 @@ public partial class MainForm : Form
         _suppressStartupEvent = false;
 
         numPort.Value = Math.Min(Math.Max(_config.Port, (int)numPort.Minimum), (int)numPort.Maximum);
+
+        cmbPaperWidth.SelectedIndex = _config.PaperWidthMm == 80 ? 1 : 0;
         btnToggleService.Text = $"\u25B6 Start Service ({_config.Port})";
         ApplyOriginSettings();
 
@@ -483,7 +485,7 @@ public partial class MainForm : Form
 
         try
         {
-            byte[] receipt = EscPosBuilder.BuildTestReceipt(printer.Name, printer.BluetoothAddress);
+            byte[] receipt = EscPosBuilder.BuildTestReceipt(printer.Name, printer.BluetoothAddress, _config.PaperWidthMm);
             bool ok = await _bluetooth.SendRawBytesAsync(printer.BluetoothAddress, receipt);
             AppendLog(ok
                 ? "Test Connection SUCCESS! Receipt printed."
@@ -710,6 +712,12 @@ public partial class MainForm : Form
         }
 
         _config.MinimizeToTray = chkMinimizeToTray.Checked;
+        PersistConfig();
+    }
+
+    private void cmbPaperWidth_SelectionChangeCommitted(object? sender, EventArgs e)
+    {
+        _config.PaperWidthMm = cmbPaperWidth.SelectedIndex == 1 ? 80 : 58;
         PersistConfig();
     }
 

@@ -4,6 +4,10 @@ All notable changes to WinRawBT. Format follows [Keep a Changelog](https://keepa
 
 ## [Unreleased]
 
+## [0.4.0-beta] - 2026-11-17
+
+- New **Paper** selector (58 mm / 80 mm) in the main window. It sizes the Test Connection receipt (32 or 48 columns, saved as `PaperWidthMm` in `config.json`). Jobs from the POS are still sent untouched.
+
 ## [0.3.0-beta] - 2026-11-17
 
 - The listener port is now configurable from the **Port** field in the main window (1024-65535, editable only while the service is stopped; default 8080). Invalid values in `config.json` reset to 8080. The Activity Log shows the full URLs on start.

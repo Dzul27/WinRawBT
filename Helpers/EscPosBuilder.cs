@@ -15,8 +15,9 @@ public static class EscPosBuilder
     /// <summary>
     /// Build a formatted diagnostic test receipt for the given printer.
     /// Uses CP437-safe ASCII so it renders on virtually all thermal heads.
+    /// <paramref name="paperWidthMm"/> 80 uses 48 columns; anything else uses the 58 mm width of 32 columns.
     /// </summary>
-    public static byte[] BuildTestReceipt(string printerName, string macAddress)
+    public static byte[] BuildTestReceipt(string printerName, string macAddress, int paperWidthMm = 58)
     {
         using var ms = new MemoryStream();
 
@@ -42,10 +43,11 @@ public static class EscPosBuilder
         ms.WriteByte((byte)'E');
         ms.WriteByte(0);
 
-        WriteLine(ms, "--------------------------------");
+        string rule = new string('-', paperWidthMm == 80 ? 48 : 32);
+        WriteLine(ms, rule);
         WriteLine(ms, "TEST CONNECTION");
         WriteLine(ms, "STATUS: CONNECTED");
-        WriteLine(ms, "--------------------------------");
+        WriteLine(ms, rule);
 
         // ESC a 0 -> left alignment for detail lines
         ms.WriteByte(ESC);

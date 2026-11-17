@@ -63,6 +63,7 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 | **FR-TEST-01** | **One-Click Test Print:** The UI shall provide a "Test Connection" button that connects to the selected printer via SPP UUID (`00001101-0000-1000-8000-00805F9B34FB`) and sends a formatted ESC/POS byte array. | P0 |
 | **FR-TEST-02** | **Diagnostic Receipt Content:** The test receipt shall print the application header, connection status (`CONNECTED`), printer MAC address, and current timestamp, followed by a paper feed/cut command (`GS V 66 0`). | P0 |
 | **FR-TEST-03** | **UI State Locking:** During a connection test, the button shall be disabled to prevent duplicate concurrent socket requests, and the result (Success/Error details) shall be written to the Activity Log. | P0 |
+| **FR-TEST-04** | **Paper Width:** The main window shall provide a "Paper" selector (58 mm = 32 columns, default; 80 mm = 48 columns), persisted as `PaperWidthMm` in `config.json`. It only sizes the Test Connection receipt (separator rules). Print jobs from the POS are always forwarded byte-for-byte, so the receipt layout for 58 mm or 80 mm paper is the POS's responsibility. Automatic width detection and layout conversion are out of scope. | P1 |
 
 ### 4.3 Local Print Bridge Service (FR-SVC)
 
@@ -147,6 +148,7 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 |                                                                   |
 |  2. Hardware & Service Controls:                                  |
 |  [ Test Connection (Print Receipt) ]   [ ▶ Start Service (8080) ]|
+|  Port [ 8080 ]    Paper [ 58 mm v ]   (test receipt width only)   |
 |                                                                   |
 |  [x] Run on Windows Startup            [x] Minimize to Tray       |
 |  ---------------------------------------------------------------  |

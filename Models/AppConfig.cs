@@ -37,6 +37,13 @@ public sealed class AppConfig
     public bool PrependInit { get; set; }
 
     /// <summary>
+    /// Paper width in millimetres, 58 or 80. Only sizes the Test Connection receipt (32 or 48 columns);
+    /// jobs from the POS are always sent untouched, so their layout is the POS's responsibility.
+    /// </summary>
+    [DataMember]
+    public int PaperWidthMm { get; set; } = 58;
+
+    /// <summary>
     /// Browser origins allowed to use the bridge, e.g. "https://pos.example.com". Only consulted when
     /// <see cref="AllowAnyOrigin"/> is false; then unlisted web POS apps are rejected (403).
     /// Requests without an Origin header (curl, native apps) are always accepted.
@@ -59,6 +66,7 @@ public sealed class AppConfig
     {
         Port = 8080;
         MinimizeToTray = true;
+        PaperWidthMm = 58;
         AllowedOrigins = new List<string>();
         AllowAnyOrigin = true;
     }
@@ -67,5 +75,6 @@ public sealed class AppConfig
     private void ValidatePort(StreamingContext _)
     {
         if (Port < 1024 || Port > 65535) Port = 8080;
+        if (PaperWidthMm != 58 && PaperWidthMm != 80) PaperWidthMm = 58;
     }
 }

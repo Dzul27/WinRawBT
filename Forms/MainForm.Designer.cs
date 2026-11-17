@@ -15,6 +15,8 @@ partial class MainForm
     private System.Windows.Forms.Button btnToggleService;
     private System.Windows.Forms.Label lblPort;
     private System.Windows.Forms.NumericUpDown numPort;
+    private System.Windows.Forms.Label lblPaper;
+    private System.Windows.Forms.ComboBox cmbPaperWidth;
     private System.Windows.Forms.CheckBox chkRunOnStartup;
     private System.Windows.Forms.CheckBox chkMinimizeToTray;
     private System.Windows.Forms.Button btnOrigins;
@@ -56,6 +58,8 @@ partial class MainForm
         this.btnToggleService = new System.Windows.Forms.Button();
         this.lblPort = new System.Windows.Forms.Label();
         this.numPort = new System.Windows.Forms.NumericUpDown();
+        this.lblPaper = new System.Windows.Forms.Label();
+        this.cmbPaperWidth = new System.Windows.Forms.ComboBox();
         this.chkRunOnStartup = new System.Windows.Forms.CheckBox();
         this.chkMinimizeToTray = new System.Windows.Forms.CheckBox();
         this.btnOrigins = new System.Windows.Forms.Button();
@@ -179,6 +183,26 @@ partial class MainForm
         this.numPort.Size = new System.Drawing.Size(80, 23);
         this.numPort.Anchor = System.Windows.Forms.AnchorStyles.Top
             | System.Windows.Forms.AnchorStyles.Right;
+
+        // lblPaper (paper width of the Test Connection receipt only)
+        this.lblPaper.AutoSize = true;
+        this.lblPaper.Location = new System.Drawing.Point(392, 100);
+        this.lblPaper.Name = "lblPaper";
+        this.lblPaper.Size = new System.Drawing.Size(37, 15);
+        this.lblPaper.Text = "Paper";
+        this.lblPaper.Anchor = System.Windows.Forms.AnchorStyles.Top
+            | System.Windows.Forms.AnchorStyles.Right;
+
+        // cmbPaperWidth (58 mm = 32 columns, 80 mm = 48 columns; affects the test receipt only)
+        this.cmbPaperWidth.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+        this.cmbPaperWidth.FormattingEnabled = true;
+        this.cmbPaperWidth.Items.AddRange(new object[] { "58 mm", "80 mm" });
+        this.cmbPaperWidth.Location = new System.Drawing.Point(432, 96);
+        this.cmbPaperWidth.Name = "cmbPaperWidth";
+        this.cmbPaperWidth.Size = new System.Drawing.Size(72, 23);
+        this.cmbPaperWidth.Anchor = System.Windows.Forms.AnchorStyles.Top
+            | System.Windows.Forms.AnchorStyles.Right;
+        this.cmbPaperWidth.SelectionChangeCommitted += new System.EventHandler(this.cmbPaperWidth_SelectionChangeCommitted);
 
         // chkRunOnStartup
         this.chkRunOnStartup.AutoSize = true;
@@ -313,6 +337,8 @@ partial class MainForm
         this.Controls.Add(this.lblControls);
         this.Controls.Add(this.lblPort);
         this.Controls.Add(this.numPort);
+        this.Controls.Add(this.lblPaper);
+        this.Controls.Add(this.cmbPaperWidth);
         this.Controls.Add(this.btnTestPrint);
         this.Controls.Add(this.btnToggleService);
         this.Controls.Add(this.chkRunOnStartup);
