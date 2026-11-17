@@ -97,7 +97,8 @@ Output is in `bin/Release/net48/`.
 
 | Printer | Result |
 |---|---|
-| _none confirmed yet_ | Please open an issue with model, Windows version, and the Activity Log |
+| EPPOS 58 mm thermal printer | Works: test receipt and printing from the bridge |
+| Other models | Please open an issue with the model, Windows version, and the Activity Log |
 
 ## Known issues
 
