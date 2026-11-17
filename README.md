@@ -1,14 +1,16 @@
-# WinRawBT
+# WinRawBT: print from a web POS to a Bluetooth thermal printer on Windows
 
 **English** | [Bahasa Indonesia](README.id.md)
 
-A small Windows tray app that lets a browser-based POS print ESC/POS receipts to a **paired Bluetooth thermal printer**, with no COM-port setup and no Windows print dialog.
+**WinRawBT is a free, open-source Windows tray app that lets a browser-based POS print ESC/POS receipts to a paired Bluetooth thermal printer.** It listens on `http://localhost:8080/` and `ws://localhost:8080/`, takes raw ESC/POS bytes, and sends them over a Bluetooth RFCOMM (Serial Port Profile) socket. No COM-port setup, no Windows print dialog, no printer driver step.
 
-It is a Windows take on the idea behind the Android app **RawBT**: pick a paired printer, click *Start Service*, and send raw ESC/POS bytes to `http://localhost:8080/` or `ws://localhost:8080/`.
+It is a Windows take on the idea behind the Android app **RawBT**: pick a paired printer, click *Start Service*, and print. The download is **about 132 KB zipped** (a 140 KB `.exe` plus one DLL) and runs on the .NET Framework 4.8 that already ships with Windows 10 and 11.
 
-![WinRawBT main window](docs/screenshot.png)
+![WinRawBT main window: Bluetooth printer list, Start Service and Test Connection](docs/screenshot.png)
 
 > **Status: beta (v0.1.x).** Not affiliated with or endorsed by the RawBT project. See [Tested printers](#tested-printers) and [Known issues](#known-issues).
+
+**Jump to:** [Install](#install) · [Allow your web POS](#allow-your-web-pos-important) · [Usage](#usage-from-a-web-page) · [FAQ](#faq) · [Comparison](#how-does-winrawbt-compare-to-other-options) · [Tested printers](#tested-printers) · [Known issues](#known-issues)
 
 ## Features
 
@@ -87,6 +89,53 @@ From a shell: `curl -X POST --data-binary @receipt.bin -H "Content-Type: applica
 | `MinimizeToTray` | `true` | Closing the window hides to tray |
 | `PrependInit` | `false` | Prepend `ESC @` to jobs that do not start with it |
 
+## FAQ
+
+### How do I print from a web POS to a Bluetooth thermal printer on Windows?
+
+Pair the printer in Windows, run WinRawBT, pick the printer, click **Start Service**, then `fetch("http://localhost:8080/", { method: "POST", body: bytes })` from your POS page with ESC/POS bytes. Add your POS site to `AllowedOrigins` in `%AppData%\WinRawBT\config.json` first, otherwise the bridge answers HTTP 403. Full snippets are in [Usage from a web page](#usage-from-a-web-page).
+
+### Is there a RawBT for Windows?
+
+RawBT is an Android app and has no Windows version. WinRawBT follows the same workflow on Windows (paired printer, local endpoint, raw ESC/POS bytes) and accepts RawBT-style `rawbt:base64,...` payloads. It is an independent project, not affiliated with RawBT.
+
+### Why not use the browser's Web Bluetooth API?
+
+Web Bluetooth only talks to Bluetooth Low Energy (GATT) devices. Most low-cost 58 mm and 80 mm receipt printers use classic Bluetooth with the Serial Port Profile (SPP/RFCOMM), which a web page cannot open. WinRawBT opens that RFCOMM socket from a native process and exposes it to the page over `localhost`.
+
+### Do I need to create a COM port or install a printer driver?
+
+No. WinRawBT connects to the paired device directly through a Bluetooth RFCOMM socket (using 32feet.NET). You do not map a virtual COM port, and jobs bypass the Windows print dialog and spooler because the bytes are sent raw.
+
+### Which Bluetooth printers work?
+
+Printers that expose the Serial Port Profile (SPP) over classic Bluetooth and accept ESC/POS. Confirmed so far: EPPOS 58 mm. See [Tested printers](#tested-printers) and please [report your model](../../issues/new?template=printer-report.yml). BLE-only printers are not supported.
+
+### What does error 10049 AddressNotAvailable mean?
+
+Windows could not find an SPP service on the device. This usually means the printer is dual-mode or BLE-only, or was paired in a way that did not register the "Serial Port" service. Remove the printer in Windows Bluetooth settings, pair it again as a classic Bluetooth device, and check that Windows lists a "Serial Port" service for it.
+
+### Is it safe to run a local print server that websites can reach?
+
+The bridge binds only to `127.0.0.1` and, by default, rejects every browser request whose `Origin` is not in your allowlist (HTTP 403). There is no authentication, so do not expose the port to a network and avoid `AllowAnyOrigin` unless you trust every site you open on that PC.
+
+### Does it convert images or HTML to ESC/POS?
+
+No. WinRawBT forwards bytes only. Generate the ESC/POS bytes in your POS (any ESC/POS encoder library works) and send the result.
+
+## How does WinRawBT compare to other options?
+
+| | WinRawBT | RawBT | QZ Tray | Web Bluetooth |
+|---|---|---|---|---|
+| Platform | Windows 10/11 | Android | Windows, macOS, Linux | Chromium browsers |
+| Classic Bluetooth SPP printers | Yes, direct RFCOMM | Yes | Usually through a virtual COM port | No (BLE only) |
+| Needs COM-port setup | No | No | Typically yes for Bluetooth | No |
+| Interface for a web POS | `localhost` HTTP + WebSocket | App intent / URL scheme | WebSocket + JS library | Browser API |
+| Runtime | .NET Framework 4.8 (built in), about 132 KB zip | Android app | Java | None |
+| License | MIT | Free Android app | Open source | n/a |
+
+Comparison reflects each project's public description at the time of writing and is meant as orientation, not a benchmark. Check the other projects' documentation before deciding.
+
 ## Build
 
 ```
@@ -100,7 +149,7 @@ Output is in `bin/Release/net48/`.
 | Printer | Result |
 |---|---|
 | EPPOS 58 mm thermal printer | Works: test receipt and printing from the bridge |
-| Other models | Please open an issue with the model, Windows version, and the Activity Log |
+| Other models | Please [open a printer report](../../issues/new?template=printer-report.yml) with the model, Windows version, and the Activity Log |
 
 ## Known issues
 
@@ -115,7 +164,7 @@ Output is in `bin/Release/net48/`.
 
 ## Contributing
 
-Issues and pull requests are welcome. For a printer problem, include the printer model and the Activity Log output.
+Issues and pull requests are welcome. For a printer problem, include the printer model and the Activity Log output. See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## License
 

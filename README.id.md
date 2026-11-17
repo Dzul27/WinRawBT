@@ -1,14 +1,16 @@
-# WinRawBT
+# WinRawBT: cetak struk dari POS web ke printer thermal Bluetooth di Windows
 
 [English](README.md) | **Bahasa Indonesia**
 
-Aplikasi tray Windows kecil yang memungkinkan POS berbasis browser mencetak struk ESC/POS ke **printer thermal Bluetooth yang sudah dipasangkan (paired)**, tanpa setting port COM dan tanpa dialog cetak Windows.
+**WinRawBT adalah aplikasi tray Windows gratis dan open source yang memungkinkan POS berbasis browser mencetak struk ESC/POS ke printer thermal Bluetooth yang sudah dipasangkan (paired).** Aplikasi ini mendengarkan di `http://localhost:8080/` dan `ws://localhost:8080/`, menerima byte ESC/POS mentah, lalu mengirimkannya lewat soket Bluetooth RFCOMM (Serial Port Profile). Tanpa setting port COM, tanpa dialog cetak Windows, tanpa langkah instal driver printer.
 
-Ini versi Windows dari ide aplikasi Android **RawBT**: pilih printer yang sudah paired, klik *Start Service*, lalu kirim byte ESC/POS mentah ke `http://localhost:8080/` atau `ws://localhost:8080/`.
+Ini versi Windows dari ide aplikasi Android **RawBT**: pilih printer yang sudah paired, klik *Start Service*, lalu cetak. Unduhannya **sekitar 132 KB dalam bentuk zip** (`.exe` 140 KB plus satu DLL) dan berjalan di .NET Framework 4.8 yang sudah ada di Windows 10 dan 11.
 
-![Jendela utama WinRawBT](docs/screenshot.png)
+![Jendela utama WinRawBT: daftar printer Bluetooth, tombol Start Service dan Test Connection](docs/screenshot.png)
 
 > **Status: beta (v0.1.x).** Tidak berafiliasi dengan atau didukung oleh proyek RawBT. Lihat [Printer yang sudah diuji](#printer-yang-sudah-diuji) dan [Masalah yang diketahui](#masalah-yang-diketahui).
+
+**Langsung ke:** [Instalasi](#instalasi) · [Izinkan POS web](#izinkan-pos-web-anda-penting) · [Pemakaian](#pemakaian-dari-halaman-web) · [FAQ](#faq) · [Perbandingan](#bagaimana-perbandingan-winrawbt-dengan-opsi-lain) · [Printer yang diuji](#printer-yang-sudah-diuji)
 
 ## Fitur
 
@@ -87,6 +89,53 @@ Dari shell: `curl -X POST --data-binary @receipt.bin -H "Content-Type: applicati
 | `MinimizeToTray` | `true` | Menutup jendela akan menyembunyikannya ke tray |
 | `PrependInit` | `false` | Tambahkan `ESC @` di depan pekerjaan yang belum diawali itu |
 
+## FAQ
+
+### Bagaimana cara cetak dari POS web ke printer thermal Bluetooth di Windows?
+
+Pasangkan (pair) printer di Windows, jalankan WinRawBT, pilih printer, klik **Start Service**, lalu dari halaman POS panggil `fetch("http://localhost:8080/", { method: "POST", body: bytes })` dengan byte ESC/POS. Tambahkan dulu alamat situs POS Anda ke `AllowedOrigins` di `%AppData%\WinRawBT\config.json`, kalau tidak bridge membalas HTTP 403. Contoh lengkap ada di [Pemakaian dari halaman web](#pemakaian-dari-halaman-web).
+
+### Apakah ada RawBT untuk Windows?
+
+RawBT adalah aplikasi Android dan tidak punya versi Windows. WinRawBT memakai alur kerja yang sama di Windows (printer paired, endpoint lokal, byte ESC/POS mentah) dan menerima payload gaya RawBT `rawbt:base64,...`. Proyek ini independen dan tidak berafiliasi dengan RawBT.
+
+### Kenapa tidak pakai Web Bluetooth API di browser?
+
+Web Bluetooth hanya bisa berbicara dengan perangkat Bluetooth Low Energy (GATT). Kebanyakan printer struk 58 mm dan 80 mm yang murah memakai Bluetooth klasik dengan Serial Port Profile (SPP/RFCOMM), yang tidak bisa dibuka oleh halaman web. WinRawBT membuka soket RFCOMM itu dari proses native dan menyediakannya ke halaman web lewat `localhost`.
+
+### Apakah perlu membuat port COM atau menginstal driver printer?
+
+Tidak. WinRawBT tersambung langsung ke perangkat paired lewat soket Bluetooth RFCOMM (memakai 32feet.NET). Anda tidak perlu memetakan port COM virtual, dan pekerjaan cetak tidak melewati dialog cetak maupun spooler Windows karena byte dikirim mentah.
+
+### Printer Bluetooth apa saja yang bisa dipakai?
+
+Printer yang menyediakan Serial Port Profile (SPP) lewat Bluetooth klasik dan menerima ESC/POS. Yang sudah terkonfirmasi: EPPOS 58 mm. Lihat [Printer yang sudah diuji](#printer-yang-sudah-diuji) dan mohon [laporkan model printer Anda](../../issues/new?template=printer-report.yml). Printer BLE-only tidak didukung.
+
+### Apa arti error 10049 AddressNotAvailable?
+
+Windows tidak menemukan layanan SPP di perangkat. Penyebab umumnya printer dual-mode atau BLE-only, atau dipasangkan dengan cara yang tidak mendaftarkan layanan "Serial Port". Hapus printer di pengaturan Bluetooth Windows, pasangkan ulang sebagai perangkat Bluetooth klasik, lalu pastikan Windows menampilkan layanan "Serial Port" untuk perangkat itu.
+
+### Apakah aman menjalankan print server lokal yang bisa diakses website?
+
+Bridge hanya terikat ke `127.0.0.1` dan secara default menolak setiap request browser yang `Origin`-nya tidak ada di allowlist (HTTP 403). Tidak ada autentikasi, jadi jangan membuka port ke jaringan dan hindari `AllowAnyOrigin` kecuali Anda percaya semua situs yang dibuka di PC itu.
+
+### Apakah bisa mengonversi gambar atau HTML ke ESC/POS?
+
+Tidak. WinRawBT hanya meneruskan byte. Buat byte ESC/POS di sisi POS Anda (library encoder ESC/POS apa pun bisa) lalu kirim hasilnya.
+
+## Bagaimana perbandingan WinRawBT dengan opsi lain?
+
+| | WinRawBT | RawBT | QZ Tray | Web Bluetooth |
+|---|---|---|---|---|
+| Platform | Windows 10/11 | Android | Windows, macOS, Linux | Browser Chromium |
+| Printer Bluetooth klasik (SPP) | Ya, RFCOMM langsung | Ya | Biasanya lewat port COM virtual | Tidak (hanya BLE) |
+| Perlu setting port COM | Tidak | Tidak | Biasanya perlu untuk Bluetooth | Tidak |
+| Antarmuka untuk POS web | HTTP + WebSocket di `localhost` | Intent / URL scheme aplikasi | WebSocket + library JS | API browser |
+| Runtime | .NET Framework 4.8 (bawaan), zip sekitar 132 KB | Aplikasi Android | Java | Tidak ada |
+| Lisensi | MIT | Aplikasi gratis | Open source | n/a |
+
+Perbandingan ini mengacu pada deskripsi publik tiap proyek saat ditulis dan hanya sebagai orientasi, bukan benchmark. Periksa dokumentasi proyek lain sebelum memutuskan.
+
 ## Build
 
 ```
@@ -100,7 +149,7 @@ Hasilnya ada di `bin/Release/net48/`.
 | Printer | Hasil |
 |---|---|
 | Printer thermal EPPOS 58 mm | Berfungsi: struk tes dan pencetakan dari bridge |
-| Model lain | Silakan buka issue dengan model printer, versi Windows, dan isi Activity Log |
+| Model lain | Silakan [buka laporan printer](../../issues/new?template=printer-report.yml) dengan model printer, versi Windows, dan isi Activity Log |
 
 ## Masalah yang diketahui
 
@@ -115,7 +164,7 @@ Hasilnya ada di `bin/Release/net48/`.
 
 ## Kontribusi
 
-Issue dan pull request diterima. Untuk masalah printer, sertakan model printer dan isi Activity Log.
+Issue dan pull request diterima. Untuk masalah printer, sertakan model printer dan isi Activity Log. Riwayat rilis ada di [CHANGELOG.md](CHANGELOG.md).
 
 ## Lisensi
 
