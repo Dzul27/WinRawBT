@@ -13,6 +13,8 @@ partial class MainForm
     private System.Windows.Forms.Label lblControls;
     private System.Windows.Forms.Button btnTestPrint;
     private System.Windows.Forms.Button btnToggleService;
+    private System.Windows.Forms.Label lblPort;
+    private System.Windows.Forms.NumericUpDown numPort;
     private System.Windows.Forms.CheckBox chkRunOnStartup;
     private System.Windows.Forms.CheckBox chkMinimizeToTray;
     private System.Windows.Forms.Button btnOrigins;
@@ -21,6 +23,7 @@ partial class MainForm
     private System.Windows.Forms.TextBox txtLog;
     private System.Windows.Forms.StatusStrip statusStrip;
     private System.Windows.Forms.ToolStripStatusLabel lblStatus;
+    private System.Windows.Forms.ToolStripStatusLabel lblCredit;
     private System.Windows.Forms.NotifyIcon notifyIcon;
     private System.Windows.Forms.ContextMenuStrip trayMenu;
     private System.Windows.Forms.ToolStripMenuItem trayOpen;
@@ -51,6 +54,8 @@ partial class MainForm
         this.lblControls = new System.Windows.Forms.Label();
         this.btnTestPrint = new System.Windows.Forms.Button();
         this.btnToggleService = new System.Windows.Forms.Button();
+        this.lblPort = new System.Windows.Forms.Label();
+        this.numPort = new System.Windows.Forms.NumericUpDown();
         this.chkRunOnStartup = new System.Windows.Forms.CheckBox();
         this.chkMinimizeToTray = new System.Windows.Forms.CheckBox();
         this.btnOrigins = new System.Windows.Forms.Button();
@@ -59,6 +64,7 @@ partial class MainForm
         this.txtLog = new System.Windows.Forms.TextBox();
         this.statusStrip = new System.Windows.Forms.StatusStrip();
         this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
+        this.lblCredit = new System.Windows.Forms.ToolStripStatusLabel();
         this.trayMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
         this.trayOpen = new System.Windows.Forms.ToolStripMenuItem();
         this.trayTestPrint = new System.Windows.Forms.ToolStripMenuItem();
@@ -149,11 +155,30 @@ partial class MainForm
         this.btnToggleService.Location = new System.Drawing.Point(264, 120);
         this.btnToggleService.Name = "btnToggleService";
         this.btnToggleService.Size = new System.Drawing.Size(240, 34);
-        this.btnToggleService.Text = "\u25B6 Start Service (8080)";
+        this.btnToggleService.Text = "\u25B6 Start Service";
         this.btnToggleService.UseVisualStyleBackColor = true;
         this.btnToggleService.Anchor = System.Windows.Forms.AnchorStyles.Top
             | System.Windows.Forms.AnchorStyles.Right;
         this.btnToggleService.Click += new System.EventHandler(this.btnToggleService_Click);
+
+        // lblPort
+        this.lblPort.AutoSize = true;
+        this.lblPort.Location = new System.Drawing.Point(264, 100);
+        this.lblPort.Name = "lblPort";
+        this.lblPort.Size = new System.Drawing.Size(30, 15);
+        this.lblPort.Text = "Port";
+        this.lblPort.Anchor = System.Windows.Forms.AnchorStyles.Top
+            | System.Windows.Forms.AnchorStyles.Right;
+
+        // numPort (1024-65535; locked while the service runs)
+        this.numPort.Location = new System.Drawing.Point(304, 96);
+        this.numPort.Minimum = 1024;
+        this.numPort.Maximum = 65535;
+        this.numPort.Value = 8080;
+        this.numPort.Name = "numPort";
+        this.numPort.Size = new System.Drawing.Size(80, 23);
+        this.numPort.Anchor = System.Windows.Forms.AnchorStyles.Top
+            | System.Windows.Forms.AnchorStyles.Right;
 
         // chkRunOnStartup
         this.chkRunOnStartup.AutoSize = true;
@@ -221,7 +246,8 @@ partial class MainForm
 
         // statusStrip
         this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.lblStatus});
+            this.lblStatus,
+            this.lblCredit});
         this.statusStrip.Location = new System.Drawing.Point(0, 454);
         this.statusStrip.Name = "statusStrip";
         this.statusStrip.Size = new System.Drawing.Size(516, 22);
@@ -230,6 +256,15 @@ partial class MainForm
         // lblStatus
         this.lblStatus.Name = "lblStatus";
         this.lblStatus.Text = "\u25CF Service Stopped";
+        this.lblStatus.Spring = true;
+        this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+
+        // lblCredit
+        this.lblCredit.Name = "lblCredit";
+        this.lblCredit.IsLink = true;
+        this.lblCredit.Text = "WinRawBT by Dzul27";
+        this.lblCredit.ToolTipText = "https://github.com/Dzul27/WinRawBT";
+        this.lblCredit.Click += new System.EventHandler(this.lblCredit_Click);
 
         // trayMenu
         this.trayMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -276,6 +311,8 @@ partial class MainForm
         this.Controls.Add(this.btnRefresh);
         this.Controls.Add(this.btnScan);
         this.Controls.Add(this.lblControls);
+        this.Controls.Add(this.lblPort);
+        this.Controls.Add(this.numPort);
         this.Controls.Add(this.btnTestPrint);
         this.Controls.Add(this.btnToggleService);
         this.Controls.Add(this.chkRunOnStartup);

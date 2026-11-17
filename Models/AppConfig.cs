@@ -62,4 +62,10 @@ public sealed class AppConfig
         AllowedOrigins = new List<string>();
         AllowAnyOrigin = true;
     }
+
+    [OnDeserialized]
+    private void ValidatePort(StreamingContext _)
+    {
+        if (Port < 1024 || Port > 65535) Port = 8080;
+    }
 }

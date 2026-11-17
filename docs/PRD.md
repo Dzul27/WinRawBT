@@ -21,7 +21,7 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 
 ### 1.2 Product Vision
 
-**WinRawBT** is a lightweight C# Windows desktop utility and background service that replicates the Android RawBT workflow. Users simply select an already-paired Bluetooth printer from a dropdown list, click **Test Connection** to verify hardware readiness, and click **Start Service** to open a local communication bridge (`localhost:8080`) that accepts raw ESC/POS commands over HTTP and WebSockets.
+**WinRawBT** is a lightweight C# Windows desktop utility and background service that replicates the Android RawBT workflow. Users simply select an already-paired Bluetooth printer from a dropdown list, click **Test Connection** to verify hardware readiness, and click **Start Service** to open a local communication bridge (`localhost:<port>`, default 8080, changeable in the UI) that accepts raw ESC/POS commands over HTTP and WebSockets.
 
 ---
 
@@ -40,7 +40,7 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 ## 3. User Personas & Use Cases
 
 * **Retail Cashier / Store Operator:** Wants to turn on the PC and Bluetooth receipt printer, verify it works with one click, and print receipts from a browser-based POS without seeing the Windows Print Dialog.
-* **POS Software Developer:** Needs a standardized local endpoint (`http://localhost:8080` or `ws://localhost:8080`) on Windows so existing Android RawBT web integrations work cross-platform without code changes.
+* **POS Software Developer:** Needs a standardized local endpoint (`http://localhost:8080` or `ws://localhost:8080` by default; the port is user-configurable) on Windows so existing Android RawBT web integrations work cross-platform without code changes.
 * **IT Support / Field Technician:** Needs a clear real-time diagnostic log and a one-click hardware test print to isolate whether an issue comes from the web app, the network, or the physical Bluetooth printer.
 
 ---
@@ -69,9 +69,9 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 | ID | Requirement | Priority |
 | --- | --- | --- |
 | **FR-SVC-01** | **Start / Stop Toggle:** The user shall be able to start and stop the background listener service via a single toggle button. | P0 |
-| **FR-SVC-02** | **HTTP POST Listener:** The service shall listen on `http://localhost:8080/` (configurable port) for incoming `POST` requests containing raw binary bytes (`application/octet-stream`) or Base64-encoded ESC/POS strings (`text/plain` or `application/json`). The decoder also auto-detects RawBT-style `intent:base64,...#Intent;...;end;` / `rawbt:base64,...` URLs, `data:` URIs, JSON wrappers (`{"data":"..."}`, byte arrays), URL-encoded/multipart forms, hex text and URL-safe/wrapped/unpadded Base64; raw binary is never re-encoded. Every job's Content-Type, byte counts, decode path and a hex+ASCII preview of the first 48 decoded bytes are written to the Activity Log. The optional `PrependInit` flag in `config.json` (default `false`) prepends `ESC @` to jobs that do not already start with it. | P0 |
+| **FR-SVC-02** | **HTTP POST Listener:** The service shall listen on `http://localhost:<port>/` (default 8080; the port is configurable via a numeric "Port" field in the main window, 1024-65535, editable only while the service is stopped, and persisted in `config.json`) for incoming `POST` requests containing raw binary bytes (`application/octet-stream`) or Base64-encoded ESC/POS strings (`text/plain` or `application/json`). The decoder also auto-detects RawBT-style `intent:base64,...#Intent;...;end;` / `rawbt:base64,...` URLs, `data:` URIs, JSON wrappers (`{"data":"..."}`, byte arrays), URL-encoded/multipart forms, hex text and URL-safe/wrapped/unpadded Base64; raw binary is never re-encoded. Every job's Content-Type, byte counts, decode path and a hex+ASCII preview of the first 48 decoded bytes are written to the Activity Log. The optional `PrependInit` flag in `config.json` (default `false`) prepends `ESC @` to jobs that do not already start with it. | P0 |
 | **FR-SVC-03** | **CORS & Origin Control:** The HTTP listener shall respond to `OPTIONS` preflight requests. By default (`AllowAnyOrigin` = `true`) every origin is accepted and `Access-Control-Allow-Origin: *` is sent. When `AllowAnyOrigin` is `false`, a request carrying an `Origin` header is accepted only if the origin is listed in `AllowedOrigins` (`config.json`); otherwise it is rejected with `403` before any data is printed (this also covers "simple" cross-site POSTs that skip preflight, and WebSocket upgrades). Requests without an `Origin` header (curl, native apps) are always accepted. For allowed origins the matching origin is echoed in `Access-Control-Allow-Origin` (`*` only when `AllowAnyOrigin` is `true`). | P0 |
-| **FR-SVC-04** | **WebSocket Compatibility:** The service shall accept WebSocket upgrades on `ws://localhost:8080/` to maintain drop-in compatibility with existing Android RawBT JavaScript SDKs. | P1 |
+| **FR-SVC-04** | **WebSocket Compatibility:** The service shall accept WebSocket upgrades on `ws://localhost:<port>/` (same port as the HTTP listener, default 8080) to maintain drop-in compatibility with existing Android RawBT JavaScript SDKs. | P1 |
 | **FR-SVC-05** | **Thread-Safe Print Queue:** All incoming print jobs shall be serialized using a concurrency lock (`SemaphoreSlim`) so simultaneous clicks in the POS app do not cause Bluetooth socket collisions or garbled receipts. | P0 |
 
 ### 4.4 Desktop UX, Logging & Lifecycle (FR-UX)

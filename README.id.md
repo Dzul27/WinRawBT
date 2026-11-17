@@ -2,7 +2,7 @@
 
 [English](README.md) | **Bahasa Indonesia**
 
-**WinRawBT adalah aplikasi tray Windows gratis dan open source yang memungkinkan POS berbasis browser mencetak struk ESC/POS ke printer thermal Bluetooth yang sudah dipasangkan (paired).** Aplikasi ini mendengarkan di `http://localhost:8080/` dan `ws://localhost:8080/`, menerima byte ESC/POS mentah, lalu mengirimkannya lewat soket Bluetooth RFCOMM (Serial Port Profile). Tanpa setting port COM, tanpa dialog cetak Windows, tanpa langkah instal driver printer.
+**WinRawBT adalah aplikasi tray Windows gratis dan open source yang memungkinkan POS berbasis browser mencetak struk ESC/POS ke printer thermal Bluetooth yang sudah dipasangkan (paired).** Secara bawaan aplikasi ini mendengarkan di `http://localhost:8080/` dan `ws://localhost:8080/` (port bisa diubah di aplikasi), menerima byte ESC/POS mentah, lalu mengirimkannya lewat soket Bluetooth RFCOMM (Serial Port Profile). Tanpa setting port COM, tanpa dialog cetak Windows, tanpa langkah instal driver printer.
 
 Ini versi Windows dari ide aplikasi Android **RawBT**: pilih printer yang sudah paired, klik *Start Service*, lalu cetak. Unduhannya **sekitar 132 KB dalam bentuk zip** (`.exe` 140 KB plus satu DLL) dan berjalan di .NET Framework 4.8 yang sudah ada di Windows 10 dan 11.
 
@@ -72,11 +72,13 @@ Dari shell: `curl -X POST --data-binary @receipt.bin -H "Content-Type: applicati
 
 `TestClient/test-pos.html` adalah halaman uji siap pakai (tambahkan `"null"` ke `AllowedOrigins` jika dibuka sebagai file lokal).
 
+Contoh memakai port bawaan 8080; ganti `8080` dengan port Anda jika sudah mengubahnya.
+
 ## Pengaturan lain
 
 | Key | Default | Arti |
 |---|---|---|
-| `Port` | `8080` | Port listener |
+| `Port` | `8080` | Port listener. Ubah lewat kolom **Port** di jendela utama (hanya saat service berhenti, rentang 1024-65535) atau di sini. URL di POS harus memakai port yang sama |
 | `AutoStartService` | `false` | Jalankan service saat aplikasi dibuka jika printer sudah tersimpan |
 | `MinimizeToTray` | `true` | Menutup jendela akan menyembunyikannya ke tray |
 | `PrependInit` | `false` | Tambahkan `ESC @` di depan pekerjaan yang belum diawali itu |

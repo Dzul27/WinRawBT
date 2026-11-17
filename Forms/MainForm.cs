@@ -76,9 +76,25 @@ public partial class MainForm : Form
     // ---------------------------------------------------------------------
     // Lifecycle
     // ---------------------------------------------------------------------
+    private void lblCredit_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/Dzul27/WinRawBT")
+            {
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            AppendLog($"[WARN] Could not open the project page: {ex.Message}");
+        }
+    }
+
     private void MainForm_Load(object? sender, EventArgs e)
     {
         notifyIcon.Icon = Icon ?? System.Drawing.SystemIcons.Application;
+        lblCredit.Text = $"WinRawBT v{typeof(MainForm).Assembly.GetName().Version?.ToString(3)} \u00B7 by Dzul27";
 
         _suppressTrayEvent = true;
         chkMinimizeToTray.Checked = _config.MinimizeToTray;
@@ -88,6 +104,7 @@ public partial class MainForm : Form
         chkRunOnStartup.Checked = StartupRegistryService.IsEnabled() || _config.RunOnStartup;
         _suppressStartupEvent = false;
 
+        numPort.Value = Math.Min(Math.Max(_config.Port, (int)numPort.Minimum), (int)numPort.Maximum);
         btnToggleService.Text = $"\u25B6 Start Service ({_config.Port})";
         ApplyOriginSettings();
 
@@ -514,6 +531,7 @@ public partial class MainForm : Form
             return;
         }
 
+        _config.Port = (int)numPort.Value;
         _server.TargetMac = printer.BluetoothAddress;
         _server.PrependInit = _config.PrependInit;
         ApplyOriginSettings();
@@ -550,6 +568,7 @@ public partial class MainForm : Form
             return;
         }
 
+        AppendLog($"[INFO] Listening on http://localhost:{_config.Port}/ and ws://localhost:{_config.Port}/");
         UpdateServiceUi(running: true);
         PersistConfig();
     }
@@ -594,6 +613,7 @@ public partial class MainForm : Form
         bool canTest = !_busy && !_testBusy;
         btnTestPrint.Enabled = canTest;
         trayTestPrint.Enabled = canTest;
+        numPort.Enabled = !_server.IsRunning;
         btnToggleService.Enabled = !_busy;
         trayToggleService.Enabled = !_busy;
     }
@@ -752,6 +772,10 @@ public partial class MainForm : Form
 
         _config.MinimizeToTray = chkMinimizeToTray.Checked;
         _config.RunOnStartup = chkRunOnStartup.Checked;
+        if (!_server.IsRunning)
+        {
+            _config.Port = (int)numPort.Value;
+        }
         _configService.Save(_config);
     }
 }

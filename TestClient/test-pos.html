@@ -61,8 +61,8 @@
     <h1>WinRawBT &mdash; POS Test Harness</h1>
     <p class="sub">Sends a sample ESC/POS receipt to the local print bridge in the wire format you pick.</p>
 
-    <label for="host">Bridge host</label>
-    <input id="host" value="localhost:8080" />
+    <label for="host">Bridge host (must match the Port set in WinRawBT, default 8080)</label>
+    <input id="host" value="localhost:8080" placeholder="localhost:&lt;WinRawBT port&gt;" />
 
     <label for="fmt">Payload format</label>
     <select id="fmt" style="width:100%;box-sizing:border-box;background:#121212;color:#e0e0e0;border:1px solid #444;border-radius:6px;padding:.5rem .6rem;font-family:Consolas,monospace">

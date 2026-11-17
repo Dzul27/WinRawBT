@@ -13,7 +13,7 @@
     <RootNamespace>WinRawBT</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <Product>WinRawBT</Product>
     <Description>Bluetooth ESC/POS Print Bridge for Windows</Description>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>

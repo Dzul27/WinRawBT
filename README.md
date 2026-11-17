@@ -2,7 +2,7 @@
 
 **English** | [Bahasa Indonesia](README.id.md)
 
-**WinRawBT is a free, open-source Windows tray app that lets a browser-based POS print ESC/POS receipts to a paired Bluetooth thermal printer.** It listens on `http://localhost:8080/` and `ws://localhost:8080/`, takes raw ESC/POS bytes, and sends them over a Bluetooth RFCOMM (Serial Port Profile) socket. No COM-port setup, no Windows print dialog, no printer driver step.
+**WinRawBT is a free, open-source Windows tray app that lets a browser-based POS print ESC/POS receipts to a paired Bluetooth thermal printer.** It listens on `http://localhost:8080/` and `ws://localhost:8080/` by default (the port is changeable in the app), takes raw ESC/POS bytes, and sends them over a Bluetooth RFCOMM (Serial Port Profile) socket. No COM-port setup, no Windows print dialog, no printer driver step.
 
 It is a Windows take on the idea behind the Android app **RawBT**: pick a paired printer, click *Start Service*, and print. The download is **about 132 KB zipped** (a 140 KB `.exe` plus one DLL) and runs on the .NET Framework 4.8 that already ships with Windows 10 and 11.
 
@@ -72,11 +72,13 @@ From a shell: `curl -X POST --data-binary @receipt.bin -H "Content-Type: applica
 
 `TestClient/test-pos.html` is a ready-made test page (add `"null"` to `AllowedOrigins` if you open it as a local file).
 
+The examples use the default port 8080; replace `8080` with your port if you changed it.
+
 ## Other config keys
 
 | Key | Default | Meaning |
 |---|---|---|
-| `Port` | `8080` | Listener port |
+| `Port` | `8080` | Listener port. Change it with the **Port** field in the main window (only while the service is stopped, range 1024-65535) or here. Your POS URLs must use the same port |
 | `AutoStartService` | `false` | Start the service on launch when a printer is saved |
 | `MinimizeToTray` | `true` | Closing the window hides to tray |
 | `PrependInit` | `false` | Prepend `ESC @` to jobs that do not start with it |

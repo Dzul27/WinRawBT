@@ -4,7 +4,7 @@ title: "WinRawBT: Bluetooth ESC/POS print bridge for Windows"
 abstract: "Windows tray app that lets a browser-based POS print ESC/POS receipts to a paired Bluetooth thermal printer over localhost HTTP/WebSocket."
 type: software
 license: MIT
-version: 0.2.0
+version: 0.3.0
 date-released: 2026-11-17
 repository-code: "https://github.com/Dzul27/WinRawBT"
 authors:

@@ -2,6 +2,13 @@
 
 All notable changes to WinRawBT. Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+## [0.3.0-beta] - 2026-11-17
+
+- The listener port is now configurable from the **Port** field in the main window (1024-65535, editable only while the service is stopped; default 8080). Invalid values in `config.json` reset to 8080. The Activity Log shows the full URLs on start.
+- The status bar now shows the version and a link to the project page (`WinRawBT v0.3.0 · by Dzul27`).
+
 ## [0.2.0-beta] - 2026-11-17
 
 - New **Allowed websites** button: choose "Allow all websites" or "Only allow these websites" (add/remove addresses). Applies immediately, no service restart, saved to `config.json`.
