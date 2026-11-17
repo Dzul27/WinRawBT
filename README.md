@@ -1,5 +1,7 @@
 # WinRawBT
 
+**English** | [Bahasa Indonesia](README.id.md)
+
 A small Windows tray app that lets a browser-based POS print ESC/POS receipts to a **paired Bluetooth thermal printer**, with no COM-port setup and no Windows print dialog.
 
 It is a Windows take on the idea behind the Android app **RawBT**: pick a paired printer, click *Start Service*, and send raw ESC/POS bytes to `http://localhost:8080/` or `ws://localhost:8080/`.
