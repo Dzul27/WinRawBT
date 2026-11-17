@@ -519,7 +519,7 @@ public partial class MainForm : Form
         _server.AllowAnyOrigin = _config.AllowAnyOrigin;
         if (_config.AllowAnyOrigin)
         {
-            AppendLog("[WARN] AllowAnyOrigin is ON (config.json): any website open on this PC can print.");
+            AppendLog("[INFO] Any browser origin is allowed (AllowAnyOrigin). Set it to false in config.json to restrict printing to AllowedOrigins.");
         }
         else
         {

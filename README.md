@@ -33,22 +33,20 @@ It is a Windows take on the idea behind the Android app **RawBT**: pick a paired
 1. Download the zip from [Releases](../../releases) and extract it anywhere (keep `WinRawBT.exe` and `InTheHand.Net.Bluetooth.dll` together).
 2. Run `WinRawBT.exe`, choose your printer, click **Test Connection**, then **Start Service**.
 
-## Allow your web POS (important)
+## Restrict which websites can print (optional)
 
-The bridge only listens on `localhost`, but any website open in a browser on the same PC could otherwise talk to it. So by default **browser requests are rejected (HTTP 403)** until their origin is allowed.
-
-Edit `%AppData%\WinRawBT\config.json` and restart the service:
+By default **any website** can send print jobs to the bridge, so a web POS works with no setup. The bridge only listens on `localhost`, but that also means any page open in a browser on the same PC can print. To lock it down, edit `%AppData%\WinRawBT\config.json` and restart the service:
 
 ```json
 {
   "Port": 8080,
-  "AllowedOrigins": ["https://pos.example.com"],
-  "AllowAnyOrigin": false
+  "AllowAnyOrigin": false,
+  "AllowedOrigins": ["https://pos.example.com"]
 }
 ```
 
-- `AllowedOrigins`: exact origins (scheme + host + port, no path). A page opened from a `file://` path sends the origin `null`.
-- `AllowAnyOrigin`: `true` accepts every website and sends `Access-Control-Allow-Origin: *`. Only use it on a PC where you trust everything that runs in the browser.
+- `AllowAnyOrigin`: `true` (default) accepts every website and sends `Access-Control-Allow-Origin: *`. Set `false` to accept only `AllowedOrigins`; everything else gets HTTP 403.
+- `AllowedOrigins`: exact origins (scheme + host + port, no path). A page opened from a `file://` path sends the origin `null`. Only used when `AllowAnyOrigin` is `false`.
 - Requests without an `Origin` header (curl, desktop apps) are always accepted.
 - A rejected origin is shown in the Activity Log with the exact fix.
 
@@ -93,7 +91,7 @@ From a shell: `curl -X POST --data-binary @receipt.bin -H "Content-Type: applica
 
 ### How do I print from a web POS to a Bluetooth thermal printer on Windows?
 
-Pair the printer in Windows, run WinRawBT, pick the printer, click **Start Service**, then `fetch("http://localhost:8080/", { method: "POST", body: bytes })` from your POS page with ESC/POS bytes. Add your POS site to `AllowedOrigins` in `%AppData%\WinRawBT\config.json` first, otherwise the bridge answers HTTP 403. Full snippets are in [Usage from a web page](#usage-from-a-web-page).
+Pair the printer in Windows, run WinRawBT, pick the printer, click **Start Service**, then `fetch("http://localhost:8080/", { method: "POST", body: bytes })` from your POS page with ESC/POS bytes. Full snippets are in [Usage from a web page](#usage-from-a-web-page).
 
 ### Is there a RawBT for Windows?
 
@@ -117,7 +115,7 @@ Windows could not find an SPP service on the device. This usually means the prin
 
 ### Is it safe to run a local print server that websites can reach?
 
-The bridge binds only to `127.0.0.1` and, by default, rejects every browser request whose `Origin` is not in your allowlist (HTTP 403). There is no authentication, so do not expose the port to a network and avoid `AllowAnyOrigin` unless you trust every site you open on that PC.
+The bridge binds only to `127.0.0.1`. There is no authentication, and by default any website open on that PC can print (`AllowAnyOrigin: true`). Do not expose the port to a network; set `AllowAnyOrigin` to `false` and list your POS in `AllowedOrigins` if you browse untrusted sites on the same PC.
 
 ### Does it convert images or HTML to ESC/POS?
 

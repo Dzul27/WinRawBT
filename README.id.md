@@ -33,22 +33,20 @@ Ini versi Windows dari ide aplikasi Android **RawBT**: pilih printer yang sudah 
 1. Unduh zip dari [Releases](../../releases) dan ekstrak di mana saja (simpan `WinRawBT.exe` dan `InTheHand.Net.Bluetooth.dll` di folder yang sama).
 2. Jalankan `WinRawBT.exe`, pilih printer, klik **Test Connection**, lalu **Start Service**.
 
-## Izinkan POS web Anda (penting)
+## Batasi website yang boleh mencetak (opsional)
 
-Bridge hanya mendengarkan di `localhost`, tetapi website apa pun yang terbuka di browser pada PC yang sama bisa saja mengaksesnya. Karena itu secara default **request dari browser ditolak (HTTP 403)** sampai origin-nya diizinkan.
-
-Edit `%AppData%\WinRawBT\config.json` lalu restart service:
+Secara default **website mana pun** boleh mengirim print job ke bridge, jadi POS web langsung jalan tanpa setup. Bridge hanya mendengarkan di `localhost`, tetapi itu juga berarti halaman apa pun yang terbuka di browser pada PC yang sama bisa mencetak. Untuk membatasinya, edit `%AppData%\WinRawBT\config.json` lalu restart service:
 
 ```json
 {
   "Port": 8080,
-  "AllowedOrigins": ["https://pos.example.com"],
-  "AllowAnyOrigin": false
+  "AllowAnyOrigin": false,
+  "AllowedOrigins": ["https://pos.example.com"]
 }
 ```
 
-- `AllowedOrigins`: origin persis (skema + host + port, tanpa path). Halaman yang dibuka dari path `file://` mengirim origin `null`.
-- `AllowAnyOrigin`: `true` menerima semua website dan mengirim `Access-Control-Allow-Origin: *`. Pakai hanya di PC yang semua isi browsernya Anda percaya.
+- `AllowAnyOrigin`: `true` (default) menerima semua website dan mengirim `Access-Control-Allow-Origin: *`. Isi `false` agar hanya `AllowedOrigins` yang diterima; selainnya HTTP 403.
+- `AllowedOrigins`: origin persis (skema + host + port, tanpa path). Halaman yang dibuka dari path `file://` mengirim origin `null`. Hanya dipakai bila `AllowAnyOrigin` bernilai `false`.
 - Request tanpa header `Origin` (curl, aplikasi desktop) selalu diterima.
 - Origin yang ditolak muncul di Activity Log beserta cara memperbaikinya.
 
@@ -93,7 +91,7 @@ Dari shell: `curl -X POST --data-binary @receipt.bin -H "Content-Type: applicati
 
 ### Bagaimana cara cetak dari POS web ke printer thermal Bluetooth di Windows?
 
-Pasangkan (pair) printer di Windows, jalankan WinRawBT, pilih printer, klik **Start Service**, lalu dari halaman POS panggil `fetch("http://localhost:8080/", { method: "POST", body: bytes })` dengan byte ESC/POS. Tambahkan dulu alamat situs POS Anda ke `AllowedOrigins` di `%AppData%\WinRawBT\config.json`, kalau tidak bridge membalas HTTP 403. Contoh lengkap ada di [Pemakaian dari halaman web](#pemakaian-dari-halaman-web).
+Pasangkan (pair) printer di Windows, jalankan WinRawBT, pilih printer, klik **Start Service**, lalu dari halaman POS panggil `fetch("http://localhost:8080/", { method: "POST", body: bytes })` dengan byte ESC/POS. Contoh lengkap ada di [Pemakaian dari halaman web](#pemakaian-dari-halaman-web).
 
 ### Apakah ada RawBT untuk Windows?
 
@@ -117,7 +115,7 @@ Windows tidak menemukan layanan SPP di perangkat. Penyebab umumnya printer dual-
 
 ### Apakah aman menjalankan print server lokal yang bisa diakses website?
 
-Bridge hanya terikat ke `127.0.0.1` dan secara default menolak setiap request browser yang `Origin`-nya tidak ada di allowlist (HTTP 403). Tidak ada autentikasi, jadi jangan membuka port ke jaringan dan hindari `AllowAnyOrigin` kecuali Anda percaya semua situs yang dibuka di PC itu.
+Bridge hanya terikat ke `127.0.0.1`. Tidak ada autentikasi, dan secara default website mana pun yang terbuka di PC itu bisa mencetak (`AllowAnyOrigin: true`). Jangan membuka port ke jaringan; isi `AllowAnyOrigin` dengan `false` dan daftarkan POS Anda di `AllowedOrigins` bila PC itu juga dipakai membuka situs yang tidak Anda percaya.
 
 ### Apakah bisa mengonversi gambar atau HTML ke ESC/POS?
 

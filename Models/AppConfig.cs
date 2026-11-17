@@ -37,19 +37,21 @@ public sealed class AppConfig
     public bool PrependInit { get; set; }
 
     /// <summary>
-    /// Browser origins allowed to use the bridge, e.g. "https://pos.example.com". Empty by default: web POS apps are
-    /// rejected (403) until their origin is listed. Requests without an Origin header (curl, native apps) are unaffected.
+    /// Browser origins allowed to use the bridge, e.g. "https://pos.example.com". Only consulted when
+    /// <see cref="AllowAnyOrigin"/> is false; then unlisted web POS apps are rejected (403).
+    /// Requests without an Origin header (curl, native apps) are always accepted.
     /// Edit config.json and restart the service to change it.
     /// </summary>
     [DataMember]
     public List<string> AllowedOrigins { get; set; } = new();
 
     /// <summary>
-    /// Accept any browser origin. Off by default: when on, any website open on this PC can print.
+    /// Accept any browser origin. On by default so a web POS works without configuration. Set to false in
+    /// config.json (and list sites in <see cref="AllowedOrigins"/>) to stop other websites open on this PC from printing.
     /// Edit config.json and restart the service to change it.
     /// </summary>
     [DataMember]
-    public bool AllowAnyOrigin { get; set; }
+    public bool AllowAnyOrigin { get; set; } = true;
 
     // DataContract deserialization skips constructors and field initializers.
     [OnDeserializing]
@@ -58,5 +60,6 @@ public sealed class AppConfig
         Port = 8080;
         MinimizeToTray = true;
         AllowedOrigins = new List<string>();
+        AllowAnyOrigin = true;
     }
 }
