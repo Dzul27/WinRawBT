@@ -1,0 +1,38 @@
+name: Printer report
+description: Tell us whether your Bluetooth thermal printer works with WinRawBT
+title: "[Printer] <brand model>"
+labels: ["printer-report"]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: Printer brand and model
+      placeholder: "e.g. EPPOS 58 mm, Rongta RPP02N, Xprinter XP-58"
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - Works (test receipt and bridge printing)
+        - Connects but prints garbage or wrong characters
+        - Fails to connect (10049 AddressNotAvailable)
+        - Fails to connect (other error)
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and Bluetooth adapter
+      placeholder: "e.g. Windows 11 23H2, Intel AX201"
+  - type: input
+    id: paper
+    attributes:
+      label: Paper width
+      placeholder: "58 mm / 80 mm"
+  - type: textarea
+    id: log
+    attributes:
+      label: Activity Log output
+      render: text
