@@ -33,22 +33,16 @@ Ini versi Windows dari ide aplikasi Android **RawBT**: pilih printer yang sudah 
 1. Unduh zip dari [Releases](../../releases) dan ekstrak di mana saja (simpan `WinRawBT.exe` dan `InTheHand.Net.Bluetooth.dll` di folder yang sama).
 2. Jalankan `WinRawBT.exe`, pilih printer, klik **Test Connection**, lalu **Start Service**.
 
-## Batasi website yang boleh mencetak (opsional)
+## Pilih website yang boleh mencetak
 
-Secara default **website mana pun** boleh mengirim print job ke bridge, jadi POS web langsung jalan tanpa setup. Bridge hanya mendengarkan di `localhost`, tetapi itu juga berarti halaman apa pun yang terbuka di browser pada PC yang sama bisa mencetak. Untuk membatasinya, edit `%AppData%\WinRawBT\config.json` lalu restart service:
+Secara default **website mana pun** boleh mengirim print job ke bridge, jadi POS web langsung jalan tanpa setup. Bridge hanya mendengarkan di `localhost`, tetapi itu juga berarti halaman apa pun yang terbuka di browser pada PC yang sama bisa mencetak.
 
-```json
-{
-  "Port": 8080,
-  "AllowAnyOrigin": false,
-  "AllowedOrigins": ["https://pos.example.com"]
-}
-```
+Klik tombol **Allowed websites** di jendela utama untuk memilih salah satu dari dua mode. Perubahan langsung berlaku, tanpa restart:
 
-- `AllowAnyOrigin`: `true` (default) menerima semua website dan mengirim `Access-Control-Allow-Origin: *`. Isi `false` agar hanya `AllowedOrigins` yang diterima; selainnya HTTP 403.
-- `AllowedOrigins`: origin persis (skema + host + port, tanpa path). Halaman yang dibuka dari path `file://` mengirim origin `null`. Hanya dipakai bila `AllowAnyOrigin` bernilai `false`.
-- Request tanpa header `Origin` (curl, aplikasi desktop) selalu diterima.
-- Origin yang ditolak muncul di Activity Log beserta cara memperbaikinya.
+- **Allow all websites** (default): semua website boleh mencetak. Paling mudah.
+- **Only allow these websites**: ketik alamat POS Anda (misalnya `pos.example.com`) lalu klik **Add**. Selainnya mendapat HTTP 403.
+
+Pilihan disimpan di `%AppData%\WinRawBT\config.json` (`AllowAnyOrigin`, `AllowedOrigins`); file itu juga bisa diedit manual saat aplikasi tertutup. Origin harus persis (skema + host + port, tanpa path); halaman yang dibuka dari path `file://` mengirim origin `null`. Request tanpa header `Origin` (curl, aplikasi desktop) selalu diterima. Origin yang ditolak muncul di Activity Log beserta caranya.
 
 ## Pemakaian dari halaman web
 

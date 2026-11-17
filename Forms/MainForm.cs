@@ -89,6 +89,7 @@ public partial class MainForm : Form
         _suppressStartupEvent = false;
 
         btnToggleService.Text = $"\u25B6 Start Service ({_config.Port})";
+        ApplyOriginSettings();
 
         LoadPrinters(selectSavedMac: true);
 
@@ -515,15 +516,14 @@ public partial class MainForm : Form
 
         _server.TargetMac = printer.BluetoothAddress;
         _server.PrependInit = _config.PrependInit;
-        _server.AllowedOrigins = _config.AllowedOrigins ?? new List<string>();
-        _server.AllowAnyOrigin = _config.AllowAnyOrigin;
+        ApplyOriginSettings();
         if (_config.AllowAnyOrigin)
         {
-            AppendLog("[INFO] Any browser origin is allowed (AllowAnyOrigin). Set it to false in config.json to restrict printing to AllowedOrigins.");
+            AppendLog("[INFO] Any website may print (Allowed websites: All).");
         }
         else
         {
-            AppendLog($"[INFO] Browser origins allowed: {(_config.AllowedOrigins is { Count: > 0 } ? string.Join(", ", _config.AllowedOrigins) : "none (requests without an Origin header only)")}.");
+            AppendLog($"[INFO] Allowed websites: {(_config.AllowedOrigins is { Count: > 0 } ? string.Join(", ", _config.AllowedOrigins) : "none (requests without an Origin header only)")}.");
         }
         if (_config.PrependInit)
         {
@@ -691,6 +691,37 @@ public partial class MainForm : Form
 
         _config.MinimizeToTray = chkMinimizeToTray.Checked;
         PersistConfig();
+    }
+
+    // ---------------------------------------------------------------------
+    // Allowed websites (origin control); applied live, no service restart needed
+    // ---------------------------------------------------------------------
+    private void btnOrigins_Click(object? sender, EventArgs e)
+    {
+        using var dialog = new OriginsForm(_config.AllowAnyOrigin, _config.AllowedOrigins ?? new List<string>());
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        _config.AllowAnyOrigin = dialog.AllowAny;
+        _config.AllowedOrigins = dialog.Origins;
+        PersistConfig();
+        ApplyOriginSettings();
+        AppendLog(_config.AllowAnyOrigin
+            ? "[INFO] Allowed websites: All. Any website may print."
+            : $"[INFO] Allowed websites: {string.Join(", ", _config.AllowedOrigins)}. Other websites get HTTP 403.");
+    }
+
+    /// <summary>Pushes the origin settings to the bridge (works while it runs) and refreshes the button text.</summary>
+    private void ApplyOriginSettings()
+    {
+        var origins = new List<string>(_config.AllowedOrigins ?? new List<string>());
+        _server.AllowedOrigins = origins;
+        _server.AllowAnyOrigin = _config.AllowAnyOrigin;
+        btnOrigins.Text = _config.AllowAnyOrigin
+            ? "Allowed websites: All (click to change)"
+            : $"Allowed websites: only {origins.Count} listed (click to change)";
     }
 
     // ---------------------------------------------------------------------

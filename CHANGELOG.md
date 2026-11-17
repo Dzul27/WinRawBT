@@ -2,6 +2,11 @@
 
 All notable changes to WinRawBT. Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.2.0-beta] - 2026-11-17
+
+- New **Allowed websites** button: choose "Allow all websites" or "Only allow these websites" (add/remove addresses). Applies immediately, no service restart, saved to `config.json`.
+- Any browser origin is now allowed by default, so a web POS works with no setup.
+
 ## [0.1.0-beta] - 2026-11-17
 
 First public beta.

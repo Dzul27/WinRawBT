@@ -33,22 +33,16 @@ It is a Windows take on the idea behind the Android app **RawBT**: pick a paired
 1. Download the zip from [Releases](../../releases) and extract it anywhere (keep `WinRawBT.exe` and `InTheHand.Net.Bluetooth.dll` together).
 2. Run `WinRawBT.exe`, choose your printer, click **Test Connection**, then **Start Service**.
 
-## Restrict which websites can print (optional)
+## Choose which websites can print
 
-By default **any website** can send print jobs to the bridge, so a web POS works with no setup. The bridge only listens on `localhost`, but that also means any page open in a browser on the same PC can print. To lock it down, edit `%AppData%\WinRawBT\config.json` and restart the service:
+By default **any website** can send print jobs to the bridge, so a web POS works with no setup. The bridge only listens on `localhost`, but that also means any page open in a browser on the same PC can print.
 
-```json
-{
-  "Port": 8080,
-  "AllowAnyOrigin": false,
-  "AllowedOrigins": ["https://pos.example.com"]
-}
-```
+Click the **Allowed websites** button in the main window to pick one of two modes. Changes apply immediately, no restart:
 
-- `AllowAnyOrigin`: `true` (default) accepts every website and sends `Access-Control-Allow-Origin: *`. Set `false` to accept only `AllowedOrigins`; everything else gets HTTP 403.
-- `AllowedOrigins`: exact origins (scheme + host + port, no path). A page opened from a `file://` path sends the origin `null`. Only used when `AllowAnyOrigin` is `false`.
-- Requests without an `Origin` header (curl, desktop apps) are always accepted.
-- A rejected origin is shown in the Activity Log with the exact fix.
+- **Allow all websites** (default): every website may print. Easiest.
+- **Only allow these websites**: type your POS address (for example `pos.example.com`) and click **Add**. Everything else gets HTTP 403.
+
+The choice is stored in `%AppData%\WinRawBT\config.json` (`AllowAnyOrigin`, `AllowedOrigins`), which you can also edit by hand while the app is closed. Origins are exact (scheme + host + port, no path); a page opened from a `file://` path sends the origin `null`. Requests without an `Origin` header (curl, desktop apps) are always accepted. A rejected origin is shown in the Activity Log with the fix.
 
 ## Usage from a web page
 

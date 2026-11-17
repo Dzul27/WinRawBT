@@ -148,8 +148,8 @@ public sealed class PrintBridgeServer : IDisposable
             string? origin = context.Request.Headers["Origin"];
             if (!IsOriginAllowed(origin))
             {
-                _log($"[WARN] Rejected request from origin \"{origin}\" (not in AllowedOrigins). " +
-                     "Add it to \"AllowedOrigins\" in config.json and restart the service, or set \"AllowAnyOrigin\": true.");
+                _log($"[WARN] Rejected request from origin \"{origin}\" (not in the allowed websites). " +
+                     "Click \"Allowed websites\" in WinRawBT and add it, or choose \"Allow all websites\".");
                 await WriteJsonAsync(context.Response, 403, ErrorJson("Origin not allowed")).ConfigureAwait(false);
                 return;
             }

@@ -15,6 +15,7 @@ partial class MainForm
     private System.Windows.Forms.Button btnToggleService;
     private System.Windows.Forms.CheckBox chkRunOnStartup;
     private System.Windows.Forms.CheckBox chkMinimizeToTray;
+    private System.Windows.Forms.Button btnOrigins;
     private System.Windows.Forms.Label lblLog;
     private System.Windows.Forms.Button btnClearLog;
     private System.Windows.Forms.TextBox txtLog;
@@ -52,6 +53,7 @@ partial class MainForm
         this.btnToggleService = new System.Windows.Forms.Button();
         this.chkRunOnStartup = new System.Windows.Forms.CheckBox();
         this.chkMinimizeToTray = new System.Windows.Forms.CheckBox();
+        this.btnOrigins = new System.Windows.Forms.Button();
         this.lblLog = new System.Windows.Forms.Label();
         this.btnClearLog = new System.Windows.Forms.Button();
         this.txtLog = new System.Windows.Forms.TextBox();
@@ -173,15 +175,26 @@ partial class MainForm
             | System.Windows.Forms.AnchorStyles.Right;
         this.chkMinimizeToTray.CheckedChanged += new System.EventHandler(this.chkMinimizeToTray_CheckedChanged);
 
+        // btnOrigins (choose which websites may print)
+        this.btnOrigins.Location = new System.Drawing.Point(12, 190);
+        this.btnOrigins.Name = "btnOrigins";
+        this.btnOrigins.Size = new System.Drawing.Size(492, 26);
+        this.btnOrigins.Text = "Allowed websites: All (click to change)";
+        this.btnOrigins.UseVisualStyleBackColor = true;
+        this.btnOrigins.Anchor = System.Windows.Forms.AnchorStyles.Top
+            | System.Windows.Forms.AnchorStyles.Left
+            | System.Windows.Forms.AnchorStyles.Right;
+        this.btnOrigins.Click += new System.EventHandler(this.btnOrigins_Click);
+
         // lblLog
         this.lblLog.AutoSize = true;
-        this.lblLog.Location = new System.Drawing.Point(12, 194);
+        this.lblLog.Location = new System.Drawing.Point(12, 228);
         this.lblLog.Name = "lblLog";
         this.lblLog.Size = new System.Drawing.Size(80, 15);
         this.lblLog.Text = "Activity Log:";
 
         // btnClearLog
-        this.btnClearLog.Location = new System.Drawing.Point(424, 190);
+        this.btnClearLog.Location = new System.Drawing.Point(424, 224);
         this.btnClearLog.Name = "btnClearLog";
         this.btnClearLog.Size = new System.Drawing.Size(80, 23);
         this.btnClearLog.Text = "Clear Log";
@@ -194,7 +207,7 @@ partial class MainForm
         this.txtLog.BackColor = System.Drawing.Color.FromArgb(18, 18, 18);
         this.txtLog.ForeColor = System.Drawing.Color.FromArgb(0, 221, 118);
         this.txtLog.Font = new System.Drawing.Font("Consolas", 9F);
-        this.txtLog.Location = new System.Drawing.Point(12, 218);
+        this.txtLog.Location = new System.Drawing.Point(12, 252);
         this.txtLog.Multiline = true;
         this.txtLog.Name = "txtLog";
         this.txtLog.ReadOnly = true;
@@ -209,7 +222,7 @@ partial class MainForm
         // statusStrip
         this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.lblStatus});
-        this.statusStrip.Location = new System.Drawing.Point(0, 420);
+        this.statusStrip.Location = new System.Drawing.Point(0, 454);
         this.statusStrip.Name = "statusStrip";
         this.statusStrip.Size = new System.Drawing.Size(516, 22);
         this.statusStrip.SizingGrip = false;
@@ -257,7 +270,7 @@ partial class MainForm
         // MainForm
         this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(516, 442);
+        this.ClientSize = new System.Drawing.Size(516, 476);
         this.Controls.Add(this.lblPrinters);
         this.Controls.Add(this.cmbPrinters);
         this.Controls.Add(this.btnRefresh);
@@ -267,6 +280,7 @@ partial class MainForm
         this.Controls.Add(this.btnToggleService);
         this.Controls.Add(this.chkRunOnStartup);
         this.Controls.Add(this.chkMinimizeToTray);
+        this.Controls.Add(this.btnOrigins);
         this.Controls.Add(this.lblLog);
         this.Controls.Add(this.btnClearLog);
         this.Controls.Add(this.txtLog);
@@ -275,7 +289,7 @@ partial class MainForm
         this.Controls.Add(this.btnCancelPair);
         this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
-        this.MinimumSize = new System.Drawing.Size(532, 481);
+        this.MinimumSize = new System.Drawing.Size(532, 515);
         this.Name = "MainForm";
         this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
         this.Text = "WinRawBT - Bluetooth ESC/POS Service";
