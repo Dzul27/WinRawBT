@@ -5,8 +5,8 @@
 | **Product Name** | WinRawBT (Windows Raw Bluetooth Print Service) |
 | **Document Version** | 1.0 |
 | **Date** | November 7, 2026 |
-| **Target Platform** | Windows 10 / Windows 11 (x64 / ARM64) |
-| **Core Technology Stack** | C#, .NET 8 (WinForms/WPF), 32feet.NET (`InTheHand.Net.Bluetooth`), `HttpListener` |
+| **Target Platform** | Windows 10 / Windows 11 (AnyCPU; x64 and ARM64 via emulation) |
+| **Core Technology Stack** | C#, .NET Framework 4.8 (WinForms), 32feet.NET (`InTheHand.Net.Bluetooth`), `HttpListener` |
 | **Status** | Ready for Engineering |
 
 ---
@@ -21,7 +21,7 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 
 ### 1.2 Product Vision
 
-**WinRawBT** is a lightweight C# Windows desktop utility and background service that replicates the Android RawBT workflow. Users simply select an already-paired Bluetooth printer from a dropdown list, click **Test Connection** to verify hardware readiness, and click **Start Service** to open a local communication bridge (`localhost:40213`) that accepts raw ESC/POS commands over HTTP and WebSockets.
+**WinRawBT** is a lightweight C# Windows desktop utility and background service that replicates the Android RawBT workflow. Users simply select an already-paired Bluetooth printer from a dropdown list, click **Test Connection** to verify hardware readiness, and click **Start Service** to open a local communication bridge (`localhost:8080`) that accepts raw ESC/POS commands over HTTP and WebSockets.
 
 ---
 
@@ -33,13 +33,14 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 | **High Print Reliability** | Successful print rate across printer sleep/wake cycles | > 99.5% |
 | **Low Print Latency** | Time from HTTP/WS request receipt to first byte transmitted over RFCOMM | < 500 ms |
 | **Minimal Resource Footprint** | Idle RAM usage when running in System Tray | < 45 MB |
+| **Small Distribution Size** | Total Release build output (`WinRawBT.exe` + `InTheHand.Net.Bluetooth.dll`) | < ~5 MB |
 
 ---
 
 ## 3. User Personas & Use Cases
 
 * **Retail Cashier / Store Operator:** Wants to turn on the PC and Bluetooth receipt printer, verify it works with one click, and print receipts from a browser-based POS without seeing the Windows Print Dialog.
-* **POS Software Developer:** Needs a standardized local endpoint (`http://localhost:40213` or `ws://localhost:40213`) on Windows so existing Android RawBT web integrations work cross-platform without code changes.
+* **POS Software Developer:** Needs a standardized local endpoint (`http://localhost:8080` or `ws://localhost:8080`) on Windows so existing Android RawBT web integrations work cross-platform without code changes.
 * **IT Support / Field Technician:** Needs a clear real-time diagnostic log and a one-click hardware test print to isolate whether an issue comes from the web app, the network, or the physical Bluetooth printer.
 
 ---
@@ -52,7 +53,8 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 | --- | --- | --- |
 | **FR-BT-01** | **Paired Device Enumeration:** The application shall query the Windows Bluetooth stack via RFCOMM (`BluetoothClient.PairedDevices`) and list all currently paired Bluetooth devices showing both `DeviceName` and `BluetoothAddress` (MAC). | P0 |
 | **FR-BT-02** | **Manual Refresh:** The UI shall provide a "Refresh" button to re-scan paired devices without restarting the application. | P0 |
-| **FR-BT-03** | **Device Persistence:** The application shall save the last selected printer's MAC address in local configuration (`appsettings.json` or User Settings) and auto-select it on launch. | P1 |
+| **FR-BT-03** | **Device Persistence:** The application shall save the last selected printer's MAC address in local configuration (`%AppData%\WinRawBT\config.json`, via `DataContractJsonSerializer`) and auto-select it on launch. | P1 |
+| **FR-BT-04** | **Scan & Pair:** The UI shall provide a "Scan for Printers" button that runs a Bluetooth inquiry (~10 s, off the UI thread) and lists every nearby, remembered and paired device, labelling devices that are not yet paired as `[not paired]` (unnamed devices shown as `(unnamed)`). Selecting an unpaired device shall offer to pair it (a single Secure Simple Pairing request without a PIN; no PIN is ever guessed or auto-tried) and enable its Serial Port (SPP) service; on success the device is marked paired, stays selected and is persisted (FR-BT-03). Unpaired devices shall never be used by Test Connection or Start Service. Scan/pairing is locked while the service is running; a running pairing shows elapsed seconds and can be canceled; if pairing fails or the printer needs a PIN, the log explains it and the app offers to open Windows Bluetooth settings (`ms-settings:bluetooth`) so the user pairs manually (a "Bluetooth Settings..." button is always available); failures are written to the Activity Log and never crash the app. | P1 |
 
 ### 4.2 Connection Testing (FR-TEST)
 
@@ -67,9 +69,9 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 | ID | Requirement | Priority |
 | --- | --- | --- |
 | **FR-SVC-01** | **Start / Stop Toggle:** The user shall be able to start and stop the background listener service via a single toggle button. | P0 |
-| **FR-SVC-02** | **HTTP POST Listener:** The service shall listen on `http://localhost:40213/` (configurable port) for incoming `POST` requests containing raw binary bytes (`application/octet-stream`) or Base64-encoded ESC/POS strings (`text/plain` or `application/json`). | P0 |
-| **FR-SVC-03** | **CORS Support:** The HTTP listener shall automatically respond to `OPTIONS` preflight requests and inject `Access-Control-Allow-Origin: *` headers so browser-based Web POS apps (HTTPS/HTTP) can print directly via `fetch()` or `XMLHttpRequest`. | P0 |
-| **FR-SVC-04** | **WebSocket Compatibility:** The service shall accept WebSocket upgrades on `ws://localhost:40213/` to maintain drop-in compatibility with existing Android RawBT JavaScript SDKs. | P1 |
+| **FR-SVC-02** | **HTTP POST Listener:** The service shall listen on `http://localhost:8080/` (configurable port) for incoming `POST` requests containing raw binary bytes (`application/octet-stream`) or Base64-encoded ESC/POS strings (`text/plain` or `application/json`). The decoder also auto-detects RawBT-style `intent:base64,...#Intent;...;end;` / `rawbt:base64,...` URLs, `data:` URIs, JSON wrappers (`{"data":"..."}`, byte arrays), URL-encoded/multipart forms, hex text and URL-safe/wrapped/unpadded Base64; raw binary is never re-encoded. Every job's Content-Type, byte counts, decode path and a hex+ASCII preview of the first 48 decoded bytes are written to the Activity Log. The optional `PrependInit` flag in `config.json` (default `false`) prepends `ESC @` to jobs that do not already start with it. | P0 |
+| **FR-SVC-03** | **CORS & Origin Allowlist:** The HTTP listener shall respond to `OPTIONS` preflight requests. A request carrying an `Origin` header is accepted only if the origin is listed in `AllowedOrigins` (`config.json`) or `AllowAnyOrigin` is `true`; otherwise it is rejected with `403` before any data is printed (this also covers "simple" cross-site POSTs that skip preflight, and WebSocket upgrades). Requests without an `Origin` header (curl, native apps) are accepted. For allowed origins the matching origin is echoed in `Access-Control-Allow-Origin` (`*` only when `AllowAnyOrigin` is `true`). Defaults: empty list, `AllowAnyOrigin = false`. | P0 |
+| **FR-SVC-04** | **WebSocket Compatibility:** The service shall accept WebSocket upgrades on `ws://localhost:8080/` to maintain drop-in compatibility with existing Android RawBT JavaScript SDKs. | P1 |
 | **FR-SVC-05** | **Thread-Safe Print Queue:** All incoming print jobs shall be serialized using a concurrency lock (`SemaphoreSlim`) so simultaneous clicks in the POS app do not cause Bluetooth socket collisions or garbled receipts. | P0 |
 
 ### 4.4 Desktop UX, Logging & Lifecycle (FR-UX)
@@ -98,7 +100,7 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 [Web POS / Desktop App] 
        │  (HTTP POST / WebSocket: Base64 or Raw Bytes)
        ▼
-[Localhost Listener (Port 40213)] 
+[Localhost Listener (Port 8080)] 
        │  (Queued via SemaphoreSlim)
        ▼
 [Payload Decoder (Base64 -> Byte[])] 
@@ -110,7 +112,7 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 
 ### 6.2 Local Print API Contract
 
-**Endpoint:** `POST http://localhost:40213/`
+**Endpoint:** `POST http://localhost:8080/`
 
 **Supported Request Formats:**
 
@@ -139,11 +141,12 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 +-------------------------------------------------------------------+
 |  WinRawBT - Bluetooth ESC/POS Service                    [_][□][X]|
 +-------------------------------------------------------------------+
-|  1. Select Paired Bluetooth Printer:                              |
-|  [ RPP02N-Thermal (00:11:22:33:44:55)          | v ]  [ Refresh ] |
+|  1. Select Bluetooth Printer (scan to find and pair new ones):    |
+|  [ RPP02N-Thermal (00:11:22:33:44:55)                      | v ]  |
+|  [ Refresh ]  [ Scan for Printers ]                               |
 |                                                                   |
 |  2. Hardware & Service Controls:                                  |
-|  [ Test Connection (Print Receipt) ]   [ ▶ Start Service (40213) ]|
+|  [ Test Connection (Print Receipt) ]   [ ▶ Start Service (8080) ]|
 |                                                                   |
 |  [x] Run on Windows Startup            [x] Minimize to Tray       |
 |  ---------------------------------------------------------------  |
@@ -152,10 +155,10 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 |  | [08:01:10] Loaded 3 paired Bluetooth devices.               |  |
 |  | [08:01:15] Testing connection to 00:11:22:33:44:55...       |  |
 |  | [08:01:17] Test Connection SUCCESS! Receipt printed.        |  |
-|  | [08:01:22] Service started on http://localhost:40213/       |  |
+|  | [08:01:22] Service started on http://localhost:8080/       |  |
 |  | [08:02:05] Incoming print job (512 bytes)... Printed OK.    |  |
 |  +-------------------------------------------------------------+  |
-|  Status: ● Service Running (Port 40213)                           |
+|  Status: ● Service Running (Port 8080)                           |
 +-------------------------------------------------------------------+
 
 ```
@@ -167,16 +170,16 @@ On Android, **RawBT** solved this by acting as a background bridge that connects
 | Scenario | System Behavior | User Feedback |
 | --- | --- | --- |
 | **Printer is turned off or out of range** | `BluetoothClient.Connect()` throws `SocketException` after timeout (~5–10s). Lock is released; HTTP returns `500`. | Log displays `[ERROR] Printer unreachable or powered off.` |
-| **Port 40213 is already in use** | `HttpListener.Start()` throws `HttpListenerException`. Service aborts startup cleanly. | Modal alert notifies user that another instance is running or port is occupied. |
+| **Port 8080 is already in use** | `HttpListener.Start()` throws `HttpListenerException`. Service aborts startup cleanly. | Modal alert notifies user that another instance is running or port is occupied. |
 | **User pairs a new printer while app is open** | Clicking **Refresh** re-queries `BluetoothClient.PairedDevices` without interrupting the active service. | Dropdown updates immediately with the newly paired device. |
+| **Printer is nearby but not paired yet** | **Scan for Printers** lists it as `[not paired]`; choosing it prompts *"Pair with X now?"*. Pairing is attempted once with no PIN (never a guessed PIN); if it fails or needs a PIN, the app offers to open Windows Bluetooth settings (`ms-settings:bluetooth`) for manual pairing. | Success: device becomes selectable and is saved. Failure/decline: log shows the reason, the device stays `[not paired]` and the previous printer is re-selected. |
 | **Rapid consecutive print clicks from POS** | `SemaphoreSlim(1, 1)` queues incoming HTTP requests in FIFO order and processes each sequentially. | Log shows each job queued and completed in order without dropping data. |
 
 ---
 
 ## 9. Release Milestones
 
-* **Phase 1 (MVP):** WinForms UI, Paired Bluetooth Discovery, ESC/POS Test Print, HTTP POST Listener (`localhost:40213`), Base64/Raw decoding, and Activity Log.
-* **Phase 2 (Production Readiness):** WebSocket (`ws://`) listener support, System Tray (`NotifyIcon`) background persistence, local configuration saving (`appsettings.json`), and Windows Startup registry toggle.
-* **Phase 3 (Advanced Features):** Built-in HTML/Image-to-ESC/POS rasterizer (for printing logos and QR codes directly from JSON/HTML payloads) and multi-printer routing by query parameter (`?printer=kitchen`).
+* **Phase 1 (MVP):** WinForms UI, Paired Bluetooth Discovery, ESC/POS Test Print, HTTP POST Listener (`localhost:8080`), Base64/Raw decoding, and Activity Log.
+* **Phase 2 (Production Readiness):** WebSocket (`ws://`) listener support, System Tray (`NotifyIcon`) background persistence, local configuration saving (`config.json`), and Windows Startup registry toggle.
+* **Out of scope / deferred:** HTML/Image-to-ESC/POS rasterizer and multi-printer routing (`?printer=kitchen`) are not planned for the current release.
 
-Would you like me to generate the complete Visual Studio project structure (including the `.csproj` file and the `Form1.Designer.cs` UI layout code) so you can compile Phase 1 right away?

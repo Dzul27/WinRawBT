@@ -1,0 +1,20 @@
+# Build output
+bin/
+obj/
+publish/
+*.exe
+*.dll
+*.zip
+
+# IDE / user files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Local tooling, not part of the project
+grill-me/
+
+# Local debug artifacts
+*.log

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WinRawBT - POS Test Harness</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+    .card {
+      width: 100%;
+      max-width: 640px;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+    }
+    h1 { font-size: 1.3rem; margin: 0 0 .25rem; }
+    p.sub { color: #9e9e9e; margin: 0 0 1.5rem; font-size: .9rem; }
+    label { display: block; font-size: .8rem; color: #9e9e9e; margin: 1rem 0 .3rem; }
+    input {
+      width: 100%; box-sizing: border-box;
+      background: #121212; color: #e0e0e0;
+      border: 1px solid #444; border-radius: 6px;
+      padding: .5rem .6rem; font-family: Consolas, monospace;
+    }
+    .row { display: flex; gap: .75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    button {
+      flex: 1 1 200px;
+      padding: .75rem 1rem;
+      border: none; border-radius: 6px;
+      font-size: .95rem; font-weight: 600; cursor: pointer;
+      color: #fff;
+    }
+    .http { background: #2563eb; }
+    .http:hover { background: #1d4ed8; }
+    .ws { background: #059669; }
+    .ws:hover { background: #047857; }
+    #log {
+      margin-top: 1.5rem;
+      background: #121212; border: 1px solid #333; border-radius: 6px;
+      padding: .75rem; height: 220px; overflow-y: auto;
+      font-family: Consolas, monospace; font-size: .8rem;
+      white-space: pre-wrap;
+    }
+    .ok { color: #22c55e; }
+    .err { color: #ef4444; }
+    .info { color: #60a5fa; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>WinRawBT &mdash; POS Test Harness</h1>
+    <p class="sub">Sends a sample ESC/POS receipt to the local print bridge in the wire format you pick.</p>
+
+    <label for="host">Bridge host</label>
+    <input id="host" value="localhost:8080" />
+
+    <label for="fmt">Payload format</label>
+    <select id="fmt" style="width:100%;box-sizing:border-box;background:#121212;color:#e0e0e0;border:1px solid #444;border-radius:6px;padding:.5rem .6rem;font-family:Consolas,monospace">
+      <option value="base64">Base64 text (text/plain)</option>
+      <option value="raw">Raw bytes (application/octet-stream / WS binary frame)</option>
+      <option value="intent">RawBT intent URL (intent:base64,...#Intent;...;end;)</option>
+      <option value="rawbt">rawbt:base64,...</option>
+      <option value="datauri">data: URI (;base64,)</option>
+      <option value="json">JSON {"data": "&lt;base64&gt;"}</option>
+      <option value="jsonbytes">JSON byte array [27,64,...]</option>
+    </select>
+
+    <div class="row">
+      <button class="http" onclick="printViaHttp()">Print via HTTP POST (fetch)</button>
+      <button class="ws" onclick="printViaWebSocket()">Print via WebSocket (ws://)</button>
+    </div>
+
+    <div id="log"></div>
+  </div>
+
+  <script>
+    // ----- Build a sample ESC/POS receipt (byte array) -----
+    function buildReceiptBytes() {
+      const ESC = 0x1B, GS = 0x1D, LF = 0x0A;
+      const bytes = [];
+      const push = (...b) => b.forEach(x => bytes.push(x));
+      const text = s => { for (const ch of s) bytes.push(ch.charCodeAt(0)); };
+
+      push(ESC, 0x40);          // init
+      push(ESC, 0x61, 1);       // center
+      push(ESC, 0x45, 1);       // bold on
+      text("WinRawBT TEST"); push(LF);
+      push(ESC, 0x45, 0);       // bold off
+      text("--------------------------------"); push(LF);
+      text("Hello from test-pos.html"); push(LF);
+      text(new Date().toLocaleString()); push(LF);
+      push(LF, LF, LF);
+      push(GS, 0x56, 66, 0);    // cut
+
+      return bytes;
+    }
+
+    function toBase64(bytes) {
+      let binary = "";
+      for (const b of bytes) binary += String.fromCharCode(b);
+      return btoa(binary);
+    }
+
+    // The bridge accepts all of these; the Activity Log shows which decode path it took.
+    function buildPayload(fmt) {
+      const bytes = buildReceiptBytes();
+      const b64 = toBase64(bytes);
+      switch (fmt) {
+        case "raw":
+          return { body: new Uint8Array(bytes), type: "application/octet-stream", binary: true };
+        case "intent":
+          return { body: `intent:base64,${b64}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`, type: "text/plain" };
+        case "rawbt":
+          return { body: `rawbt:base64,${b64}`, type: "text/plain" };
+        case "datauri":
+          return { body: `data:application/octet-stream;base64,${b64}`, type: "text/plain" };
+        case "json":
+          return { body: JSON.stringify({ data: b64 }), type: "application/json" };
+        case "jsonbytes":
+          return { body: JSON.stringify(bytes), type: "application/json" };
+        default:
+          return { body: b64, type: "text/plain" };
+      }
+    }
+
+    function log(msg, cls) {
+      const el = document.getElementById("log");
+      const line = document.createElement("div");
+      if (cls) line.className = cls;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function host() {
+      return document.getElementById("host").value.trim();
+    }
+
+    // ----- HTTP POST (format chosen above) -----
+    async function printViaHttp() {
+      const fmt = document.getElementById("fmt").value;
+      const p = buildPayload(fmt);
+      log(`HTTP POST -> http://${host()}/ (${fmt}, ${p.type}, ${p.body.length} bytes/chars)`, "info");
+      try {
+        const res = await fetch(`http://${host()}/`, {
+          method: "POST",
+          headers: { "Content-Type": p.type },
+          body: p.body
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) log(`OK ${res.status}: ${JSON.stringify(data)}`, "ok");
+        else log(`ERR ${res.status}: ${JSON.stringify(data)}`, "err");
+      } catch (e) {
+        log(`Fetch failed: ${e.message}. Is the service running?`, "err");
+      }
+    }
+
+    // ----- WebSocket (text frame, or binary frame for "raw") -----
+    function printViaWebSocket() {
+      const fmt = document.getElementById("fmt").value;
+      const p = buildPayload(fmt);
+      log(`WS connect -> ws://${host()}/ (${fmt}, ${p.binary ? "binary" : "text"} frame)`, "info");
+      let ws;
+      try {
+        ws = new WebSocket(`ws://${host()}/`);
+      } catch (e) {
+        log(`WS create failed: ${e.message}`, "err");
+        return;
+      }
+
+      ws.onopen = () => {
+        log("WS connected, sending receipt...", "info");
+        ws.send(p.body);
+      };
+      ws.onmessage = (ev) => {
+        log(`WS reply: ${ev.data}`, "ok");
+        ws.close();
+      };
+      ws.onerror = () => log("WS error. Is the service running?", "err");
+      ws.onclose = () => log("WS closed.", "info");
+    }
+  </script>
+</body>
+</html>
